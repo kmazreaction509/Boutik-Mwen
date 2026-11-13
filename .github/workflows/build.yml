@@ -67,3 +67,19 @@ jobs:
           name: boutik-pos-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+      - name: Set app icon
+        run: |
+          npm install sharp
+          node -e "
+          const sharp = require('sharp');
+          const fs = require('fs');
+          const sizes = {mdpi:48,hdpi:72,xhdpi:96,xxhdpi:144,xxxhdpi:192};
+          (async () => {
+            for (const [density,size] of Object.entries(sizes)) {
+              const dir = 'android/app/src/main/res/mipmap-' + density;
+              fs.mkdirSync(dir,{recursive:true});
+              await sharp('icon.png').resize(size,size).png().toFile(dir+'/ic_launcher.png');
+              await sharp('icon.png').resize(size,size).png().toFile(dir+'/ic_launcher_round.png');
+            }
+          })().catch(err => {console.error(err);process.exit(1);});
+          "
